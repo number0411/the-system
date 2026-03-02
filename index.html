@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#050810">
+<title>THE SYSTEM — Conrad LeDrew</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg-primary: #050810;
+    --bg-secondary: #0A0E1A;
+    --bg-card: rgba(255,255,255,0.02);
+    --border: rgba(255,255,255,0.06);
+    --text-primary: #E8E6E1;
+    --text-secondary: rgba(255,255,255,0.4);
+    --text-dim: rgba(255,255,255,0.2);
+    --gold: #FFD700;
+    --cyan: #22D3EE;
+    --red: #EF4444;
+    --green: #34D399;
+    --purple: #A78BFA;
+    --amber: #F59E0B;
+    --spirit: #FFD700;
+    --revenue: #22D3EE;
+    --body: #EF4444;
+    --discipline: #A78BFA;
+  }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(34,211,238,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,211,238,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .system-header {
+    position: relative; z-index: 1;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(107,114,128,0.25);
+    background: linear-gradient(180deg, rgba(107,114,128,0.08) 0%, transparent 100%);
+    transition: border-color 0.5s, background 0.5s;
+  }
+
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+
+  .system-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px; letter-spacing: 4px; margin-bottom: 4px;
+    text-shadow: 0 0 10px rgba(107,114,128,0.3);
+    transition: color 0.5s, text-shadow 0.5s;
+  }
+
+  .player-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 17px; font-weight: 800; color: #F5F0E8;
+    letter-spacing: 2px; text-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+
+  .rank-display {
+    font-family: 'Orbitron', sans-serif;
+    text-align: right;
+  }
+
+  .rank-name {
+    font-size: 11px; letter-spacing: 3px; font-weight: 700;
+    transition: color 0.5s, text-shadow 0.5s;
+  }
+
+  .rank-title {
+    font-size: 8px; letter-spacing: 2px; color: var(--text-dim);
+  }
+
+  .level-bar-container { margin-top: 12px; }
+
+  .level-bar-labels {
+    display: flex; justify-content: space-between; margin-bottom: 4px;
+    font-size: 10px; color: var(--text-secondary);
+  }
+
+  .xp-bar {
+    width: 100%; height: 6px; background: rgba(255,255,255,0.05);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+
+  .xp-bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.5s ease, background 0.5s;
+    box-shadow: 0 0 10px rgba(107,114,128,0.3);
+  }
+
+  .day-counter {
+    margin-top: 8px; font-size: 9px; color: var(--text-dim);
+    letter-spacing: 2px; text-align: center;
+  }
+
+  /* Tab nav */
+  .tab-nav {
+    display: flex; position: relative; z-index: 1;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .tab-btn {
+    flex: 1; background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim); padding: 11px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+
+  .tab-btn.active {
+    background: rgba(34,211,238,0.08);
+    border-bottom-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .tab-icon { font-size: 12px; }
+
+  /* Content */
+  .content { position: relative; z-index: 1; padding: 20px 16px 120px; }
+
+  /* Stat bars */
+  .stat-row { margin-bottom: 16px; }
+
+  .stat-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .stat-left { display: flex; align-items: center; gap: 8px; }
+  .stat-icon { font-size: 13px; }
+  .stat-label { font-size: 10px; letter-spacing: 3px; font-weight: 700; }
+  .stat-level { font-size: 10px; color: var(--text-dim); }
+
+  .stat-right { display: flex; align-items: center; gap: 12px; }
+  .stat-xp { font-size: 9px; color: var(--text-dim); }
+  .stat-streak { font-size: 10px; }
+
+  .stat-bar {
+    width: 100%; height: 8px; background: rgba(255,255,255,0.05);
+    border-radius: 4px; overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%; border-radius: 4px; transition: width 0.5s ease;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px; margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  /* Big rank display */
+  .rank-hero {
+    text-align: center; padding: 28px 0; margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .rank-hero-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 42px; font-weight: 900;
+    letter-spacing: 6px; line-height: 1;
+    transition: color 0.5s, text-shadow 0.5s;
+  }
+
+  .rank-hero-subtitle {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 6px; color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  .rank-hero-meta {
+    font-size: 10px; color: var(--text-dim); margin-top: 12px;
+    letter-spacing: 2px;
+  }
+
+  /* Quick stats grid */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+
+  .stat-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px; text-align: center;
+  }
+
+  .stat-box-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px; font-weight: 800; letter-spacing: 1px;
+  }
+
+  .stat-box-label {
+    font-size: 8px; letter-spacing: 2px; color: var(--text-dim); margin-top: 4px;
+  }
+
+  /* Quest items */
+  .quest-item {
+    width: 100%; text-align: left; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 14px 14px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    -webkit-appearance: none; appearance: none;
+  }
+
+  .quest-item.completed {
+    background: rgba(52,211,153,0.06);
+    border-color: rgba(52,211,153,0.25);
+  }
+
+  .quest-check {
+    width: 22px; height: 22px; border-radius: 4px;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0; transition: all 0.2s;
+  }
+
+  .quest-item.completed .quest-check {
+    border-color: var(--green); background: rgba(52,211,153,0.15); color: var(--green);
+  }
+
+  .quest-text {
+    font-size: 11px; color: var(--text-primary); line-height: 1.4; flex: 1;
+  }
+
+  .quest-item.completed .quest-text {
+    color: var(--text-secondary); text-decoration: line-through;
+  }
+
+  .quest-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  .quest-stat-tag { font-size: 8px; letter-spacing: 1px; }
+  .quest-xp { font-size: 9px; color: var(--cyan); }
+  .quest-req { font-size: 7px; color: var(--red); letter-spacing: 1px; }
+
+  /* Penalty warning */
+  .penalty-box {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 6px; padding: 12px 14px; margin-bottom: 20px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+
+  .penalty-icon { color: var(--red); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .penalty-text { font-size: 10px; color: rgba(239,68,68,0.75); line-height: 1.5; }
+
+  /* All complete */
+  .all-complete {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.3);
+    border-radius: 6px; padding: 16px; margin-bottom: 16px; text-align: center;
+  }
+
+  .all-complete-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px; color: var(--green); font-weight: 700; letter-spacing: 2px;
+  }
+
+  .all-complete-sub { font-size: 10px; color: rgba(52,211,153,0.5); margin-top: 4px; }
+
+  /* Skill nodes */
+  .skill-node {
+    border-radius: 6px; padding: 14px 16px; margin-bottom: 8px;
+    position: relative; overflow: hidden; cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .skill-node.unlocked::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+
+  .skill-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .skill-name { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+  .skill-desc { font-size: 9px; color: var(--text-dim); margin-top: 3px; }
+  .skill-tier { font-size: 8px; letter-spacing: 2px; text-align: right; }
+  .skill-req { font-size: 8px; color: var(--text-dim); margin-top: 2px; text-align: right; }
+
+  /* Skill filter */
+  .skill-filters { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+
+  .filter-btn {
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 6px 12px;
+    font-size: 9px; letter-spacing: 2px; border-radius: 4px;
+    cursor: pointer; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active { border-color: rgba(34,211,238,0.4); color: var(--cyan); background: rgba(34,211,238,0.1); }
+
+  /* Inventory */
+  .inv-section-title {
+    font-size: 9px; letter-spacing: 3px; margin-bottom: 8px;
+    padding-bottom: 4px;
+  }
+
+  .inv-item {
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 6px;
+  }
+
+  .inv-item.equipped { background: rgba(255,255,255,0.02); }
+  .inv-item.stored { opacity: 0.45; }
+
+  .inv-icon-box {
+    width: 32px; height: 32px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; flex-shrink: 0;
+  }
+
+  .inv-details { flex: 1; }
+  .inv-name { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .inv-desc { font-size: 9px; color: var(--text-dim); margin-top: 1px; }
+  .inv-status { font-size: 8px; letter-spacing: 2px; }
+
+  /* Log */
+  .log-entry {
+    padding: 8px 12px; margin-bottom: 4px;
+    border-left: 2px solid rgba(255,255,255,0.1);
+  }
+
+  .log-entry.latest { border-left-width: 3px; }
+  .log-text { font-size: 11px; line-height: 1.5; }
+
+  /* Rank ladder */
+  .rank-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 8px; margin-bottom: 2px; border-radius: 4px;
+    border-left: 3px solid transparent;
+  }
+
+  .rank-row.current { border-left-style: solid; }
+
+  .rank-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .rank-row-name { font-size: 10px; letter-spacing: 2px; }
+  .rank-row-title { font-size: 9px; color: var(--text-dim); font-style: italic; }
+  .rank-row-range { font-size: 8px; color: var(--text-dim); margin-left: auto; }
+
+  /* Bonus quests */
+  .bonus-section {
+    margin-top: 20px; padding: 16px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .bonus-title { font-size: 9px; letter-spacing: 3px; color: var(--gold); margin-bottom: 10px; }
+  .bonus-list { font-size: 11px; color: var(--text-secondary); line-height: 1.8; }
+
+  /* Locked items */
+  .locked-section {
+    margin-top: 20px; padding: 16px;
+    background: rgba(255,215,0,0.03);
+    border: 1px solid rgba(255,215,0,0.08);
+    border-radius: 6px;
+  }
+
+  .locked-title { font-size: 9px; letter-spacing: 3px; color: var(--gold); margin-bottom: 10px; }
+  .locked-list { font-size: 11px; color: var(--text-dim); line-height: 1.9; }
+
+  /* New day button */
+  .new-day-btn {
+    width: 100%; padding: 14px; margin-top: 20px;
+    background: rgba(34,211,238,0.08);
+    border: 1px solid rgba(34,211,238,0.25);
+    border-radius: 6px; color: var(--cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; letter-spacing: 3px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .new-day-btn:active { background: rgba(34,211,238,0.15); transform: scale(0.98); }
+
+  .reset-btn {
+    width: 100%; padding: 10px; margin-top: 8px;
+    background: transparent;
+    border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 6px; color: rgba(239,68,68,0.4);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  /* Footer */
+  .system-footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, transparent, var(--bg-primary) 60%);
+    padding: 40px 20px 16px; text-align: center; z-index: 5;
+    pointer-events: none;
+  }
+
+  .footer-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7px; letter-spacing: 4px; color: rgba(34,211,238,0.25);
+  }
+
+  /* Notification toast */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(10,14,26,0.95); border: 1px solid rgba(34,211,238,0.3);
+    border-radius: 6px; padding: 12px 20px; z-index: 100;
+    font-size: 11px; color: var(--cyan); letter-spacing: 1px;
+    box-shadow: 0 0 30px rgba(34,211,238,0.15);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+    max-width: 90vw; text-align: center;
+  }
+
+  .toast.gold { border-color: rgba(255,215,0,0.4); color: var(--gold); box-shadow: 0 0 30px rgba(255,215,0,0.15); }
+  .toast.green { border-color: rgba(52,211,153,0.4); color: var(--green); box-shadow: 0 0 30px rgba(52,211,153,0.15); }
+  .toast.purple { border-color: rgba(167,139,250,0.4); color: var(--purple); box-shadow: 0 0 30px rgba(167,139,250,0.15); }
+
+  @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+  /* Date input */
+  .date-display {
+    font-size: 9px; color: var(--text-dim); letter-spacing: 2px;
+    text-align: center; margin-top: 8px; cursor: pointer;
+    padding: 4px 8px; border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .date-display:hover { background: rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// THE SYSTEM — ENGINE
+// ═══════════════════════════════════════════════
+
+const RANKS = [
+  { name:"E-RANK", title:"Awakened", min:1, max:10, color:"#6B7280", glow:"rgba(107,114,128,0.3)" },
+  { name:"D-RANK", title:"Initiate", min:11, max:25, color:"#22D3EE", glow:"rgba(34,211,238,0.3)" },
+  { name:"C-RANK", title:"Warrior", min:26, max:45, color:"#34D399", glow:"rgba(52,211,153,0.3)" },
+  { name:"B-RANK", title:"Elite", min:46, max:65, color:"#A78BFA", glow:"rgba(167,139,250,0.3)" },
+  { name:"A-RANK", title:"Commander", min:66, max:85, color:"#F59E0B", glow:"rgba(245,158,11,0.3)" },
+  { name:"S-RANK", title:"Sovereign", min:86, max:99, color:"#EF4444", glow:"rgba(239,68,68,0.3)" },
+  { name:"NATIONAL", title:"Kingdom Builder", min:100, max:999, color:"#FFD700", glow:"rgba(255,215,0,0.5)" },
+];
+
+const getRank = (lv) => RANKS.find(r => lv >= r.min && lv <= r.max) || RANKS[0];
+
+const STATS = {
+  spirit:     { label:"SPIRIT",     icon:"✝", color:"#FFD700" },
+  revenue:    { label:"REVENUE",    icon:"⚡", color:"#22D3EE" },
+  body:       { label:"BODY",       icon:"◆", color:"#EF4444" },
+  discipline: { label:"DISCIPLINE", icon:"▣", color:"#A78BFA" },
+};
+
+const QUESTS = [
+  { id:"q1", text:"5:00 AM — God Block (Bible + Journal + Prayer)", stat:"spirit", xp:15, req:true },
+  { id:"q2", text:"300 Dials Completed", stat:"revenue", xp:20, req:true },
+  { id:"q3", text:"Evening Scripture (Psalm) Before Bed", stat:"spirit", xp:10, req:false },
+  { id:"q4", text:"Phone Out of Room by 9 PM", stat:"discipline", xp:10, req:true },
+  { id:"q5", text:"Zero Porn / Zero Instagram", stat:"discipline", xp:15, req:true },
+  { id:"q6", text:"Gym / Training Session", stat:"body", xp:15, req:false },
+  { id:"q7", text:"Ate Full Meals (Protein Target)", stat:"body", xp:10, req:false },
+  { id:"q8", text:"1 Gallon Water", stat:"body", xp:5, req:false },
+];
+
+const SKILLS = [
+  { id:"s1", name:"Morning Offering", desc:"7 consecutive God Blocks", stat:"spirit", tier:1, reqLv:1, reqStreak:7 },
+  { id:"s2", name:"Word Bearer", desc:"Read James 1-5 + share insights", stat:"spirit", tier:1, reqLv:3, reqStreak:0 },
+  { id:"s3", name:"Prayer Warrior", desc:"30 consecutive morning prayers", stat:"spirit", tier:2, reqLv:8, reqStreak:30 },
+  { id:"s4", name:"Voice of God", desc:"Journal 3 confirmed words from God", stat:"spirit", tier:2, reqLv:12, reqStreak:0 },
+  { id:"s5", name:"Fasting Protocol", desc:"Complete a 24-hour fast with prayer", stat:"spirit", tier:3, reqLv:20, reqStreak:0 },
+  { id:"s6", name:"Shepherd's Heart", desc:"Lead a Bible study or discipleship", stat:"spirit", tier:3, reqLv:30, reqStreak:0 },
+  { id:"r1", name:"Iron Hands", desc:"Hit 300 dials in a single day", stat:"revenue", tier:1, reqLv:1, reqStreak:0 },
+  { id:"r2", name:"Rejection Armor", desc:"300 dials for 5 consecutive days", stat:"revenue", tier:1, reqLv:3, reqStreak:5 },
+  { id:"r3", name:"First Blood", desc:"Close your first deal", stat:"revenue", tier:2, reqLv:5, reqStreak:0 },
+  { id:"r4", name:"Closing Authority", desc:"5 deals in a single month", stat:"revenue", tier:2, reqLv:12, reqStreak:0 },
+  { id:"r5", name:"$10K Month", desc:"Earn $10,000+ in a single month", stat:"revenue", tier:3, reqLv:20, reqStreak:0 },
+  { id:"r6", name:"$30K Sovereign", desc:"Earn $30,000+ in a single month", stat:"revenue", tier:3, reqLv:40, reqStreak:0 },
+  { id:"b1", name:"First Rep", desc:"Complete first gym session", stat:"body", tier:1, reqLv:1, reqStreak:0 },
+  { id:"b2", name:"Iron Habit", desc:"Train 5x/week for 2 weeks", stat:"body", tier:1, reqLv:3, reqStreak:10 },
+  { id:"b3", name:"190 Club", desc:"Reach 190 lbs bodyweight", stat:"body", tier:2, reqLv:10, reqStreak:0 },
+  { id:"b4", name:"200 Club", desc:"Reach 200 lbs bodyweight", stat:"body", tier:2, reqLv:20, reqStreak:0 },
+  { id:"b5", name:"Temple Built", desc:"210 lbs lean athletic build", stat:"body", tier:3, reqLv:35, reqStreak:0 },
+  { id:"b6", name:"Meal Prep Master", desc:"Consistent meal prep for 30 days", stat:"body", tier:2, reqLv:12, reqStreak:30 },
+  { id:"d1", name:"Clean Night", desc:"7 nights phone out of room", stat:"discipline", tier:1, reqLv:1, reqStreak:7 },
+  { id:"d2", name:"Digital Fast", desc:"14 days zero IG / zero porn", stat:"discipline", tier:1, reqLv:5, reqStreak:14 },
+  { id:"d3", name:"Routine Lock", desc:"Full schedule for 21 days", stat:"discipline", tier:2, reqLv:12, reqStreak:21 },
+  { id:"d4", name:"Monk Mode", desc:"30 days full quest completion", stat:"discipline", tier:2, reqLv:20, reqStreak:30 },
+  { id:"d5", name:"Unbreakable", desc:"60 days full execution", stat:"discipline", tier:3, reqLv:35, reqStreak:60 },
+  { id:"d6", name:"90-Day Fortress", desc:"90 days — identity transformed", stat:"discipline", tier:3, reqLv:50, reqStreak:90 },
+];
+
+const INVENTORY = [
+  { name:"NLT Leather Bible", type:"weapon", desc:"Primary weapon — Sword of the Spirit", eq:true },
+  { name:"2026 Year Planner", type:"tool", desc:"Strategic planning & daily tracking", eq:true },
+  { name:"Journal & Pen", type:"tool", desc:"Capturing God's voice and reflection", eq:true },
+  { name:"Phone (Dialer Mode)", type:"weapon", desc:"Revenue generation — 300 dials/day", eq:true },
+  { name:"Sales Framework", type:"scroll", desc:"Consultative aged lead approach", eq:true },
+  { name:"March Reading Plan", type:"scroll", desc:"THE FOUNDATION — 31 days of Scripture", eq:true },
+  { name:"Gym Membership", type:"tool", desc:"Available — activating Week 2", eq:false },
+  { name:"Mentor Bond: Jordan", type:"ally", desc:"Aaron — holds up your arms", eq:true },
+  { name:"Mentor Bond: Justin", type:"ally", desc:"Hur — holds up your arms", eq:true },
+];
+
+const TYPE_COLORS = { weapon:"#EF4444", tool:"#22D3EE", scroll:"#FFD700", ally:"#34D399" };
+const TYPE_LABELS = { weapon:"WEAPONS", tool:"TOOLS", scroll:"SCROLLS", ally:"ALLIES" };
+const TIER_LABELS = { 1:"TIER I", 2:"TIER II", 3:"TIER III" };
+
+const STORAGE_KEY = "theSystem_conradLeDrew_v1";
+
+function getDefault() {
+  return {
+    level: 1, totalXP: 0, xpToNext: 100,
+    stats: { spirit:2, revenue:1, body:1, discipline:1 },
+    statXP: { spirit:15, revenue:0, body:0, discipline:0 },
+    streaks: { spirit:1, revenue:0, body:0, discipline:0 },
+    bestStreaks: { spirit:1, revenue:0, body:0, discipline:0 },
+    questLog: {},
+    unlockedSkills: [],
+    dayCount: 1,
+    currentDate: "2026-03-02",
+    log: [
+      "[SYSTEM] Player awakened. Day 1 initialized.",
+      "[SYSTEM] Spirit +15 XP — God Block completed. James 1 read.",
+      "[SYSTEM] Quest active: Hit 300 dials to unlock 'Iron Hands'."
+    ],
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return getDefault();
+}
+
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+let STATE = loadState();
+let activeTab = "status";
+let skillFilter = "all";
+let toastQueue = [];
+
+function statXPToNext(lv) { return lv * 25 + 50; }
+
+function addLog(msg) {
+  STATE.log.unshift(`[SYSTEM] ${msg}`);
+  if (STATE.log.length > 50) STATE.log.length = 50;
+}
+
+function showToast(msg, type="cyan") {
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 3000);
+}
+
+function toggleQuest(qid) {
+  const q = QUESTS.find(x => x.id === qid);
+  const was = STATE.questLog[qid];
+  const now = !was;
+  STATE.questLog[qid] = now;
+
+  if (now) {
+    STATE.totalXP += q.xp;
+    STATE.statXP[q.stat] += q.xp;
+    const needed = statXPToNext(STATE.stats[q.stat]);
+    if (STATE.statXP[q.stat] >= needed) {
+      STATE.statXP[q.stat] -= needed;
+      STATE.stats[q.stat]++;
+      addLog(`${STATS[q.stat].label} leveled up to LV.${STATE.stats[q.stat]}!`);
+      showToast(`${STATS[q.stat].label} → LV.${STATE.stats[q.stat]}`, "gold");
+    }
+    if (STATE.totalXP >= STATE.xpToNext) {
+      STATE.totalXP -= STATE.xpToNext;
+      STATE.level++;
+      STATE.xpToNext = Math.floor(STATE.xpToNext * 1.15);
+      const nr = getRank(STATE.level);
+      const pr = getRank(STATE.level - 1);
+      addLog(`LEVEL UP! Now Level ${STATE.level}.`);
+      showToast(`LEVEL UP → LV.${STATE.level}`, "cyan");
+      if (nr.name !== pr.name) {
+        addLog(`★ RANK UP! ${nr.name} — "${nr.title}" achieved!`);
+        setTimeout(() => showToast(`★ RANK UP: ${nr.name} ★`, "gold"), 500);
+      }
+    }
+    addLog(`Quest complete: "${q.text}" — +${q.xp} XP`);
+  } else {
+    STATE.totalXP = Math.max(0, STATE.totalXP - q.xp);
+    STATE.statXP[q.stat] = Math.max(0, STATE.statXP[q.stat] - q.xp);
+  }
+
+  saveState(STATE);
+  render();
+}
+
+function toggleSkill(sid) {
+  const s = SKILLS.find(x => x.id === sid);
+  const idx = STATE.unlockedSkills.indexOf(sid);
+  if (idx === -1 && STATE.stats[s.stat] >= s.reqLv) {
+    STATE.unlockedSkills.push(sid);
+    addLog(`★ SKILL UNLOCKED: "${s.name}" — ${s.desc}`);
+    showToast(`SKILL: ${s.name}`, "purple");
+  } else if (idx !== -1) {
+    STATE.unlockedSkills.splice(idx, 1);
+  }
+  saveState(STATE);
+  render();
+}
+
+function newDay() {
+  // Check penalty quests
+  const reqQuests = QUESTS.filter(q => q.req);
+  const missed = reqQuests.filter(q => !STATE.questLog[q.id]);
+  if (missed.length > 0) {
+    missed.forEach(q => {
+      STATE.streaks[q.stat] = 0;
+      addLog(`PENALTY: Missed "${q.text}" — ${STATS[q.stat].label} streak reset.`);
+    });
+    showToast(`${missed.length} penalty quest(s) missed — streaks reset`, "");
+  }
+
+  // Update streaks for completed stat categories
+  const completedStats = new Set();
+  QUESTS.forEach(q => { if(STATE.questLog[q.id]) completedStats.add(q.stat); });
+  Object.keys(STATE.streaks).forEach(k => {
+    if (completedStats.has(k)) {
+      STATE.streaks[k]++;
+      if (STATE.streaks[k] > STATE.bestStreaks[k]) STATE.bestStreaks[k] = STATE.streaks[k];
+    }
+  });
+
+  // Bonus XP for all quests complete
+  const allDone = QUESTS.every(q => STATE.questLog[q.id]);
+  if (allDone) {
+    STATE.totalXP += 25;
+    addLog("★ ALL QUESTS COMPLETE — Bonus +25 XP awarded.");
+  }
+
+  STATE.dayCount++;
+  STATE.questLog = {};
+
+  // Increment date
+  const d = new Date(STATE.currentDate + "T12:00:00");
+  d.setDate(d.getDate() + 1);
+  STATE.currentDate = d.toISOString().split("T")[0];
+
+  addLog(`— DAY ${STATE.dayCount} initialized. ${STATE.currentDate} —`);
+  showToast(`DAY ${STATE.dayCount} — New quests available`, "cyan");
+
+  saveState(STATE);
+  render();
+}
+
+function resetAll() {
+  if (confirm("⚠ FULL RESET — This will erase ALL progress. Are you sure?")) {
+    if (confirm("This cannot be undone. Confirm reset?")) {
+      STATE = getDefault();
+      saveState(STATE);
+      showToast("System reset complete.", "");
+      render();
+    }
+  }
+}
+
+function setTab(t) { activeTab = t; render(); }
+function setFilter(f) { skillFilter = f; render(); }
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+
+function render() {
+  const rank = getRank(STATE.level);
+  const completed = QUESTS.filter(q => STATE.questLog[q.id]).length;
+  const total = QUESTS.length;
+  const allDone = completed === total;
+  const totalStatLevel = Object.values(STATE.stats).reduce((a,b) => a+b, 0);
+  const bestStreak = Math.max(...Object.values(STATE.bestStreaks));
+  const questRate = total > 0 ? Math.round(completed / total * 100) : 0;
+
+  const tabDefs = [
+    { id:"status", label:"STATUS", icon:"◆" },
+    { id:"quests", label:"QUESTS", icon:"!" },
+    { id:"skills", label:"SKILLS", icon:"★" },
+    { id:"inventory", label:"ITEMS", icon:"▤" },
+    { id:"log", label:"LOG", icon:"▸" },
+  ];
+
+  let html = `
+    <div class="system-header" style="border-color:${rank.color}25; background:linear-gradient(180deg,${rank.color}08 0%,transparent 100%)">
+      <div class="header-top">
+        <div>
+          <div class="system-tag" style="color:${rank.color};text-shadow:0 0 10px ${rank.glow}">◆ THE SYSTEM ◆</div>
+          <div class="player-name">CONRAD LEDREW</div>
+        </div>
+        <div class="rank-display">
+          <div class="rank-name" style="color:${rank.color};text-shadow:0 0 8px ${rank.glow}">${rank.name}</div>
+          <div class="rank-title">"${rank.title}"</div>
+        </div>
+      </div>
+      <div class="level-bar-container">
+        <div class="level-bar-labels">
+          <span>LV. ${STATE.level}</span>
+          <span>${STATE.totalXP % STATE.xpToNext} / ${STATE.xpToNext} XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-bar-fill" style="width:${(STATE.totalXP % STATE.xpToNext) / STATE.xpToNext * 100}%;background:${rank.color};box-shadow:0 0 10px ${rank.glow}"></div>
+        </div>
+      </div>
+      <div class="day-counter">DAY ${STATE.dayCount} — ${STATE.currentDate} — QUESTS: ${completed}/${total}</div>
+    </div>
+
+    <div class="tab-nav">
+      ${tabDefs.map(t => `
+        <button class="tab-btn ${activeTab===t.id?'active':''}" onclick="setTab('${t.id}')">
+          <span class="tab-icon">${t.icon}</span>${t.label}
+        </button>
+      `).join('')}
+    </div>
+
+    <div class="content">
+  `;
+
+  // STATUS
+  if (activeTab === "status") {
+    html += `
+      <div class="rank-hero">
+        <div class="rank-hero-text" style="color:${rank.color};text-shadow:0 0 40px ${rank.glow},0 0 80px ${rank.glow}">${rank.name}</div>
+        <div class="rank-hero-subtitle">${rank.title.toUpperCase()}</div>
+        <div class="rank-hero-meta">PLAYER LEVEL ${STATE.level} — TOTAL XP ${STATE.totalXP}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">CORE ATTRIBUTES</div>
+    `;
+    ["spirit","revenue","body","discipline"].forEach(k => {
+      const c = STATS[k];
+      const lv = STATE.stats[k];
+      const xp = STATE.statXP[k];
+      const need = statXPToNext(lv);
+      const str = STATE.streaks[k];
+      html += `
+        <div class="stat-row">
+          <div class="stat-header">
+            <div class="stat-left">
+              <span class="stat-icon" style="color:${c.color}">${c.icon}</span>
+              <span class="stat-label" style="color:${c.color}">${c.label}</span>
+              <span class="stat-level">LV.${lv}</span>
+            </div>
+            <div class="stat-right">
+              <span class="stat-xp">${xp}/${need} XP</span>
+              <span class="stat-streak" style="color:${str>0?'#FFD700':'var(--text-dim)'}">🔥 ${str}d</span>
+            </div>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-bar-fill" style="width:${xp/need*100}%;background:${c.color};box-shadow:0 0 8px ${c.color}40"></div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    html += `
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-box-value" style="color:var(--cyan)">${totalStatLevel}</div><div class="stat-box-label">TOTAL LEVEL</div></div>
+        <div class="stat-box"><div class="stat-box-value" style="color:var(--purple)">${STATE.unlockedSkills.length}/${SKILLS.length}</div><div class="stat-box-label">SKILLS</div></div>
+        <div class="stat-box"><div class="stat-box-value" style="color:var(--gold)">${bestStreak}d</div><div class="stat-box-label">BEST STREAK</div></div>
+        <div class="stat-box"><div class="stat-box-value" style="color:var(--green)">${questRate}%</div><div class="stat-box-label">TODAY'S QUESTS</div></div>
+      </div>
+    `;
+
+    html += `<div class="card"><div class="card-title">RANK PROGRESSION</div>`;
+    RANKS.forEach(r => {
+      const isCurrent = r.name === rank.name;
+      const isPast = STATE.level > r.max;
+      html += `
+        <div class="rank-row ${isCurrent?'current':''}" style="${isCurrent?`background:${r.color}10;border-left-color:${r.color}`:''}">
+          <div class="rank-dot" style="background:${isPast||isCurrent?r.color:'rgba(255,255,255,0.1)'};${isCurrent?`box-shadow:0 0 8px ${r.glow}`:''}"></div>
+          <span class="rank-row-name" style="color:${isPast||isCurrent?r.color:'var(--text-dim)'};${isCurrent?'font-weight:700':''}">${r.name}</span>
+          <span class="rank-row-title">${r.title}</span>
+          <span class="rank-row-range">LV.${r.min}-${r.max}</span>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  // QUESTS
+  if (activeTab === "quests") {
+    html += `
+      <div class="penalty-box">
+        <span class="penalty-icon">⚠</span>
+        <span class="penalty-text">WARNING: Failure to complete REQ quests will reset stat streaks on new day. The System does not reward inconsistency.</span>
+      </div>
+      <div class="card-title">DAILY QUESTS — ${completed}/${total} COMPLETE</div>
+    `;
+
+    if (allDone) {
+      html += `
+        <div class="all-complete">
+          <div class="all-complete-title">★ ALL QUESTS COMPLETE ★</div>
+          <div class="all-complete-sub">+25 Bonus XP on new day. The System acknowledges your discipline.</div>
+        </div>
+      `;
+    }
+
+    QUESTS.forEach(q => {
+      const done = !!STATE.questLog[q.id];
+      const c = STATS[q.stat];
+      html += `
+        <button class="quest-item ${done?'completed':''}" onclick="toggleQuest('${q.id}')">
+          <div class="quest-check">${done?'✓':''}</div>
+          <div class="quest-text">${q.text}</div>
+          <div class="quest-meta">
+            <span class="quest-stat-tag" style="color:${c.color}">${c.label}</span>
+            <span class="quest-xp">+${q.xp}XP</span>
+            ${q.req?'<span class="quest-req">REQ</span>':''}
+          </div>
+        </button>
+      `;
+    });
+
+    html += `
+      <div class="bonus-section">
+        <div class="bonus-title">BONUS QUESTS — OPTIONAL</div>
+        <div class="bonus-list">
+          ◇ Share Scripture insight with men's group (+5 XP Spirit)<br>
+          ◇ Practice script out loud 15 min (+5 XP Revenue)<br>
+          ◇ Journal: "What did God say today?" (+5 XP Spirit)<br>
+          ◇ 5 min silence after Scripture (+5 XP Spirit)<br>
+          ◇ Pray before dial blocks (+5 XP Spirit)
+        </div>
+      </div>
+
+      <button class="new-day-btn" onclick="newDay()">◆ ADVANCE TO NEXT DAY ◆</button>
+      <button class="reset-btn" onclick="resetAll()">FULL SYSTEM RESET</button>
+    `;
+  }
+
+  // SKILLS
+  if (activeTab === "skills") {
+    const filters = [{ id:"all", label:"ALL", color:"#22D3EE" }];
+    ["spirit","revenue","body","discipline"].forEach(k => filters.push({ id:k, label:STATS[k].label, color:STATS[k].color }));
+
+    html += `<div class="skill-filters">`;
+    filters.forEach(f => {
+      html += `<button class="filter-btn ${skillFilter===f.id?'active':''}" style="${skillFilter===f.id?`border-color:${f.color}40;color:${f.color};background:${f.color}15`:''}" onclick="setFilter('${f.id}')">${f.label}</button>`;
+    });
+    html += `</div>`;
+
+    html += `<div class="card-title">SKILL TREE — ${STATE.unlockedSkills.length}/${SKILLS.length} UNLOCKED</div>`;
+    html += `<p style="font-size:10px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Tap unlockable skills to activate when requirements are met.</p>`;
+
+    const filtered = skillFilter === "all" ? SKILLS : SKILLS.filter(s => s.stat === skillFilter);
+
+    filtered.forEach((s, i) => {
+      const unlocked = STATE.unlockedSkills.includes(s.id);
+      const canUnlock = !unlocked && STATE.stats[s.stat] >= s.reqLv;
+      const c = STATS[s.stat];
+      const tierBgs = { 1:"rgba(255,255,255,0.04)", 2:"rgba(167,139,250,0.04)", 3:"rgba(255,215,0,0.04)" };
+      const tierBds = { 1:"rgba(255,255,255,0.08)", 2:"rgba(167,139,250,0.12)", 3:"rgba(255,215,0,0.12)" };
+      const op = unlocked ? 1 : canUnlock ? 0.75 : 0.35;
+
+      html += `
+        <div class="skill-node ${unlocked?'unlocked':''}" onclick="toggleSkill('${s.id}')"
+          style="background:${unlocked?c.color+'12':tierBgs[s.tier]};border:1px solid ${unlocked?c.color+'35':tierBds[s.tier]};opacity:${op}">
+          ${unlocked?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,${c.color},transparent)"></div>`:''}
+          <div class="skill-header">
+            <div>
+              <div class="skill-name" style="color:${unlocked?c.color:'var(--text-secondary)'}">${unlocked?'◆ ':canUnlock?'◇ ':'▪ '}${s.name}</div>
+              <div class="skill-desc">${s.desc}</div>
+            </div>
+            <div>
+              <div class="skill-tier" style="color:${unlocked?c.color:'var(--text-dim)'}">${TIER_LABELS[s.tier]}</div>
+              <div class="skill-req">${unlocked?'UNLOCKED':`REQ: LV.${s.reqLv}`}${s.reqStreak>0&&!unlocked?` + ${s.reqStreak}d`:''}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // INVENTORY
+  if (activeTab === "inventory") {
+    html += `<div class="card-title">EQUIPPED ITEMS & RESOURCES</div>`;
+
+    ["weapon","tool","scroll","ally"].forEach(type => {
+      const items = INVENTORY.filter(i => i.type === type);
+      html += `<div class="inv-section-title" style="color:${TYPE_COLORS[type]};border-bottom:1px solid ${TYPE_COLORS[type]}20">${TYPE_LABELS[type]}</div>`;
+      items.forEach(item => {
+        html += `
+          <div class="inv-item ${item.eq?'equipped':'stored'}" style="border-color:${item.eq?TYPE_COLORS[item.type]+'25':'var(--border)'}">
+            <div class="inv-icon-box" style="background:${TYPE_COLORS[item.type]}12;border:1px solid ${TYPE_COLORS[item.type]}25;color:${TYPE_COLORS[item.type]}">${TYPE_LABELS[item.type][0]}</div>
+            <div class="inv-details">
+              <div class="inv-name">${item.name}</div>
+              <div class="inv-desc">${item.desc}</div>
+            </div>
+            <div class="inv-status" style="color:${item.eq?'var(--green)':'var(--text-dim)'}">${item.eq?'EQUIPPED':'STORED'}</div>
+          </div>
+        `;
+      });
+      html += `<div style="height:16px"></div>`;
+    });
+
+    html += `
+      <div class="locked-section">
+        <div class="locked-title">LOCKED ITEMS — OBTAINABLE</div>
+        <div class="locked-list">
+          ▪ Vehicle — Unlocks at: Emergency fund + $10K months<br>
+          ▪ Apartment Lease — Unlocks at: 3 consecutive $15K+ months<br>
+          ▪ Meal Prep System — Unlocks at: First commission<br>
+          ▪ Second Phone Line — Unlocks at: Team building phase<br>
+          ▪ Mentorship Expansion — Unlocks at: B-Rank
+        </div>
+      </div>
+    `;
+  }
+
+  // LOG
+  if (activeTab === "log") {
+    html += `<div class="card-title">SYSTEM LOG — RECENT ACTIVITY</div>`;
+    STATE.log.forEach((entry, i) => {
+      const isLvl = entry.includes("LEVEL UP") || entry.includes("RANK UP");
+      const isSkill = entry.includes("SKILL UNLOCKED");
+      const isQuest = entry.includes("Quest complete");
+      const isDay = entry.includes("DAY") && entry.includes("initialized");
+      const color = isLvl ? "var(--gold)" : isSkill ? "var(--purple)" : isQuest ? "var(--green)" : isDay ? "var(--cyan)" : "var(--text-secondary)";
+      html += `
+        <div class="log-entry ${i===0?'latest':''}" style="border-left-color:${color}60;${i===0?`background:${color.replace('var(--','').replace(')','') === color ? color+'08' : 'rgba(255,255,255,0.02)'}`:''}" >
+          <div class="log-text" style="color:${color}">${entry}</div>
+        </div>
+      `;
+    });
+    if (STATE.log.length === 0) {
+      html += `<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:12px">No activity logged.</div>`;
+    }
+  }
+
+  html += `
+    </div>
+    <div class="system-footer">
+      <div class="footer-text">◆ THE SYSTEM WATCHES. THE SYSTEM REWARDS. THE SYSTEM NEVER LIES. ◆</div>
+    </div>
+  `;
+
+  document.getElementById("app").innerHTML = html;
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
